@@ -16,7 +16,6 @@ const COURSE_CONFIG = {
         { title: "2.1 字面量与注释",    file: "chapter2.html" },
         { title: "2.2 变量与标识符",    file: "chapter2-2.html" },
         { title: "2.3 数据类型与运算符",    file: "chapter2-3.html" },
-        { title: "2.4 元组",           file: "chapter2-4.html" },
       ]
     },
     {

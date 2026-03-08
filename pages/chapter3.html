@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.1 if判断</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/chapter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <style>
+        /* ── input 终端演示卡 ────────────────────── */
+        .input-demo-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            border-radius: 18px;
+            padding: 28px 32px;
+            margin: 24px 0;
+            color: white;
+        }
+        .terminal-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .t-red    { background: #ef4444; }
+        .t-yellow { background: #f59e0b; }
+        .t-green  { background: #22c55e; }
+        .terminal-title { font-size: 13px; color: rgba(255,255,255,0.4); margin-left: 8px; letter-spacing: 0.5px; }
+        .terminal-line  { font-family: 'Courier New', monospace; font-size: 14px; line-height: 2.1; color: #e2e8f0; }
+        .t-prompt  { color: #38bdf8; font-weight: 700; }
+        .t-input   { color: #fbbf24; }
+        .t-comment { color: #475569; }
+        .t-output  { color: #86efac; }
+
+        /* ── 互动 input 模拟器 ───────────────────── */
+        .simulator-wrap {
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+            border: 2px solid #e0e7ff;
+            border-radius: 18px;
+            padding: 28px;
+            margin: 24px 0;
+        }
+        .sim-title { font-size: 15px; font-weight: 800; color: #3730a3; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+        .sim-row   { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+        .sim-label { font-size: 13px; font-weight: 700; color: #475569; white-space: nowrap; min-width: 120px; }
+        .sim-input {
+            flex: 1; min-width: 160px;
+            padding: 10px 16px;
+            border: 2px solid #c7d2fe; border-radius: 10px;
+            font-size: 14px; font-family: 'Courier New', monospace; color: #1e293b;
+            outline: none; transition: border-color 0.2s;
+        }
+        .sim-input:focus { border-color: #6366f1; }
+        .sim-run-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white; border: none; border-radius: 10px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; white-space: nowrap;
+        }
+        .sim-run-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(99,102,241,.35); }
+        .sim-output {
+            background: #1e293b; border-radius: 12px;
+            padding: 16px 20px; font-family: 'Courier New', monospace;
+            font-size: 14px; color: #86efac;
+            min-height: 52px; margin-top: 4px; line-height: 1.9; transition: all 0.3s;
+        }
+        .sim-output .out-label { color: #64748b; font-size: 12px; margin-bottom: 4px; }
+
+        /* ── 流程图 (if / if-else) ───────────────── */
+        .flowchart { display: flex; flex-direction: column; align-items: center; margin: 28px auto; max-width: 500px; }
+        .fc-start, .fc-end {
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white; border-radius: 50px; padding: 12px 36px;
+            font-size: 14px; font-weight: 700;
+        }
+        .fc-end { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+        .fc-arrow {
+            width: 2px; height: 32px; background: #94a3b8; position: relative;
+        }
+        .fc-arrow::after {
+            content: '▼'; position: absolute; bottom: -14px; left: 50%;
+            transform: translateX(-50%); font-size: 12px; color: #94a3b8;
+        }
+        .fc-diamond {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #fbbf24; color: #78350f;
+            padding: 14px 28px; border-radius: 8px;
+            font-size: 14px; font-weight: 700; text-align: center;
+            position: relative; margin: 4px 0;
+        }
+        .fc-branches { display: flex; gap: 48px; align-items: flex-start; margin-top: 8px; }
+        .fc-branch   { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .fc-branch-label { font-size: 12px; font-weight: 800; padding: 3px 12px; border-radius: 50px; }
+        .label-yes { background: #dcfce7; color: #15803d; }
+        .label-no  { background: #fee2e2; color: #b91c1c; }
+        .fc-action { border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px 20px; font-size: 13px; font-weight: 600; text-align: center; min-width: 130px; background: white; color: #1e293b; }
+        .fc-action-green { border-color: #86efac; background: #f0fdf4; color: #15803d; }
+        .fc-action-red   { border-color: #fca5a5; background: #fff1f2; color: #b91c1c; }
+        .fc-action-gray  { border-color: #e2e8f0; background: #f8fafc; color: #64748b; font-style: italic; }
+
+        /* ── 多路流程（elif） ─────────────────────── */
+        .multi-flow { display: flex; flex-direction: column; gap: 0; margin: 24px 0; }
+        .mf-row { display: grid; grid-template-columns: 170px 1fr; gap: 0; }
+        .mf-cond {
+            padding: 14px 16px; font-family: 'Courier New', monospace;
+            font-size: 13px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; text-align: center;
+        }
+        .mf-if   { background: #dbeafe; color: #1d4ed8; border: 2px solid #93c5fd; border-radius: 12px 0 0 0; }
+        .mf-elif { background: #ede9fe; color: #6d28d9; border: 2px solid #c4b5fd; border-left: 2px solid #c4b5fd; border-top: none; }
+        .mf-else { background: #dcfce7; color: #15803d; border: 2px solid #86efac; border-top: none; border-radius: 0 0 0 12px; }
+        .mf-body { padding: 14px 18px; font-size: 13px; color: #374151; line-height: 1.7; display: flex; align-items: center; }
+        .mf-body-if   { background: #eff6ff; border: 1px solid #bfdbfe; border-left: none; border-radius: 0 12px 0 0; }
+        .mf-body-elif { background: #f5f3ff; border: 1px solid #ddd6fe; border-left: none; border-top: none; border-radius: 0; }
+        .mf-body-else { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
+
+        /* ── 成绩滑块模拟器 ───────────────────────── */
+        .grade-sim { background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%); border-radius: 18px; padding: 28px; margin: 24px 0; color: white; }
+        .grade-sim h4 { font-size: 16px; font-weight: 800; margin-bottom: 20px; color: #e0e7ff; }
+        .grade-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .grade-label { font-size: 14px; color: #94a3b8; white-space: nowrap; }
+        .grade-slider {
+            flex: 1; min-width: 160px; -webkit-appearance: none;
+            height: 6px; border-radius: 99px; background: rgba(255,255,255,.15); outline: none; cursor: pointer;
+        }
+        .grade-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            cursor: pointer; box-shadow: 0 2px 8px rgba(99,102,241,.5);
+        }
+        .grade-val { font-size: 28px; font-weight: 900; color: #fbbf24; min-width: 52px; text-align: center; }
+        .grade-result {
+            background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+            border-radius: 12px; padding: 16px 20px;
+            font-family: 'Courier New', monospace; font-size: 15px; min-height: 52px; transition: all .3s;
+        }
+        .grade-result .gr-label { color: #64748b; font-size: 12px; margin-bottom: 4px; display: block; }
+        .grade-excellent { color: #34d399; }
+        .grade-good      { color: #60a5fa; }
+        .grade-pass      { color: #fbbf24; }
+        .grade-fail      { color: #f87171; }
+
+        /* ── 三种形式对比 ─────────────────────────── */
+        .compare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+        .compare-card { border-radius: 16px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.07); transition: transform .25s; }
+        .compare-card:hover { transform: translateY(-4px); }
+        .compare-card-head { padding: 16px 20px; font-size: 15px; font-weight: 900; color: white; display: flex; align-items: center; gap: 10px; }
+        .cc-blue   .compare-card-head { background: linear-gradient(135deg, #2563eb, #4f46e5); }
+        .cc-indigo .compare-card-head { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+        .cc-violet .compare-card-head { background: linear-gradient(135deg, #7c3aed, #9333ea); }
+        .compare-card-body { padding: 16px 20px; background: white; font-size: 13px; color: #475569; line-height: 1.75; }
+        .compare-card-body code {
+            display: block; background: #f8fafc; border-radius: 8px;
+            padding: 10px 14px; font-size: 12px; color: #6366f1; margin-top: 12px;
+            font-family: 'Courier New', monospace; white-space: pre; line-height: 1.7;
+        }
+
+        /* ── 嵌套 if 可视化 ───────────────────────── */
+        .nested-demo { background: #fafafa; border: 2px dashed #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; }
+        .nd-outer { background: #eff6ff; border: 2px solid #93c5fd; border-radius: 12px; padding: 16px 20px; }
+        .nd-label-outer { font-size: 12px; font-weight: 800; color: #1d4ed8; margin-bottom: 10px; letter-spacing: .5px; text-transform: uppercase; }
+        .nd-inner { background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px; padding: 14px 18px; margin-top: 12px; }
+        .nd-label-inner { font-size: 12px; font-weight: 800; color: #15803d; margin-bottom: 8px; }
+        .nd-body { font-size: 13px; color: #374151; line-height: 1.75; }
+
+        /* ── 缩进警告卡 ───────────────────────────── */
+        .indent-warn {
+            background: linear-gradient(135deg, #fff7ed, #ffedd5);
+            border: 2px solid #fed7aa; border-radius: 16px;
+            padding: 22px 26px; margin: 20px 0;
+            display: flex; gap: 16px; align-items: flex-start;
+        }
+        .indent-warn-icon  { font-size: 28px; flex-shrink: 0; }
+        .indent-warn-title { font-size: 15px; font-weight: 800; color: #c2410c; margin-bottom: 8px; }
+        .indent-warn-text  { font-size: 14px; color: #7c2d12; line-height: 1.75; }
+        .indent-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+        .ic-wrong {
+            background: #fef2f2; border: 2px solid #fca5a5; border-radius: 10px;
+            padding: 12px 14px; font-family: 'Courier New', monospace; font-size: 12px; color: #991b1b; white-space: pre; line-height: 1.7;
+        }
+        .ic-correct {
+            background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px;
+            padding: 12px 14px; font-family: 'Courier New', monospace; font-size: 12px; color: #166534; white-space: pre; line-height: 1.7;
+        }
+        .ic-label { font-size: 11px; font-weight: 800; margin-bottom: 6px; letter-spacing: .5px; }
+
+        /* ── 响应式 ───────────────────────────────── */
+        @media (max-width: 768px) {
+            .compare-grid      { grid-template-columns: 1fr; }
+            .fc-branches       { gap: 20px; }
+            .mf-row            { grid-template-columns: 110px 1fr; }
+            .indent-compare    { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="top-nav">
+        <div class="nav-logo">
+            <button id="menuToggle" class="menu-toggle">☰</button>
+            <a href="../index.html">🐍 Python 入门课</a>
+        </div>
+        <div class="nav-info">专为初中生设计 · 从零开始学编程</div>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar"></aside>
+
+        <main class="main-content">
+
+            <!-- 面包屑 -->
+            <div class="breadcrumb animate-in">
+                <a href="../index.html">🏠 首页</a>
+                <span class="bc-sep">›</span><span>第三章</span>
+                <span class="bc-sep">›</span>
+                <span class="bc-current">3.1 if 判断</span>
+            </div>
+
+            <!-- Hero -->
+            <div class="chapter-hero animate-in">
+                <div class="chapter-hero-bg">
+                    <div class="ch-circle cc1"></div>
+                    <div class="ch-circle cc2"></div>
+                </div>
+                <div class="chapter-hero-content">
+                    <div class="chapter-hero-left">
+                        <div class="chapter-meta">
+                            <span class="badge badge-intermediate">进阶</span>
+                            <span class="chapter-num">第三章 · 第 1 节</span>
+                        </div>
+                        <h1>if 判断</h1>
+                        <p>学会让程序"做决定"——用 input() 获取用户输入，用 if / if-else / if-elif-else 写出有逻辑的代码！</p>
+                    </div>
+                    <div class="chapter-hero-right">
+                        <div class="chapter-info-pill">🗺️ 含思维导图</div>
+                        <div class="chapter-info-pill">🎬 含视频讲解</div>
+                        <div class="chapter-info-pill">💻 含代码示例</div>
+                        <div class="chapter-info-pill">🎮 含互动模拟器</div>
+                        <div class="chapter-info-pill">🧠 含互动测验</div>
+                    </div>
+                </div>
+                <div class="chapter-progress">
+                    <div class="progress-label-row">
+                        <span>📊 本章学习进度</span>
+                        <span class="progress-text"></span>
+                    </div>
+                    <div class="progress-bar-bg"><div class="progress-bar-fill"></div></div>
+                </div>
+            </div>
+
+            <!-- 思维导图 -->
+            <section class="content-section animate-in" style="animation-delay:.05s">
+                <div class="section-label">
+                    <div class="section-label-icon">🗺️</div>
+                    <span>本节知识结构</span>
+                </div>
+                <p class="content-p">在开始学习之前,先来看看这一节我们要学哪些内容:</p>
+                <div class="mindmap">
+                    <div class="mindmap-center">第一节<br>if 判断</div>
+                    <div class="mindmap-branches">
+                        <div class="mindmap-branch branch-blue">
+                            <div class="branch-node">① input() 语句</div>
+                            <div class="branch-leaves">
+                                <div class="branch-leaf">获取用户输入</div>
+                                <div class="branch-leaf">永远返回字符串</div>
+                                <div class="branch-leaf">int() 转数字</div>
+                            </div>
+                        </div>
+                        <div class="mindmap-branch branch-indigo">
+                            <div class="branch-node">② if 判断</div>
+                            <div class="branch-leaves">
+                                <div class="branch-leaf">条件为真才执行</div>
+                                <div class="branch-leaf">缩进是语法</div>
+                            </div>
+                        </div>
+                        <div class="mindmap-branch branch-violet">
+                            <div class="branch-node">③ if-else</div>
+                            <div class="branch-leaves">
+                                <div class="branch-leaf">两条路选一条</div>
+                                <div class="branch-leaf">else 对应"否则"</div>
+                            </div>
+                        </div>
+                        <div class="mindmap-branch branch-green">
+                            <div class="branch-node">④ if-elif-else</div>
+                            <div class="branch-leaves">
+                                <div class="branch-leaf">多条件依次判断</div>
+                                <div class="branch-leaf">elif 可以多个</div>
+                                <div class="branch-leaf">else 兜底</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 视频 -->
+            <section class="content-section animate-in" style="animation-delay:.1s">
+                <div class="section-label">
+                    <div class="section-label-icon">🎬</div>
+                    <span>视频讲解</span>
+                </div>
+                <div class="video-wrapper">
+                    <iframe src="https://player.bilibili.com/player.html?bvid=BV1qW4y1a7fU&autoplay=0" allowfullscreen></iframe>
+                </div>
+                <div class="video-tip">
+                    💡 <strong>观看提示：</strong>视频中会手把手演示 if 语句的写法和常见错误，建议先看视频，再跟着下面内容动手练习。
+                </div>
+            </section>
+
+            <!-- 1. input() -->
+            <section class="content-section animate-in" style="animation-delay:.15s">
+                <div class="section-label">
+                    <div class="section-label-icon">⌨️</div>
+                    <span>① input() — 获取用户输入</span>
+                </div>
+
+                <p class="content-p">
+                    到目前为止，我们写的程序都是"自说自话"的。但真正有用的程序需要跟用户"对话"——
+                    比如让用户输入名字、年龄或成绩。<code>input()</code> 就是完成这件事的函数。
+                </p>
+
+                <div class="input-demo-card">
+                    <div class="terminal-bar">
+                        <div class="terminal-dot t-red"></div>
+                        <div class="terminal-dot t-yellow"></div>
+                        <div class="terminal-dot t-green"></div>
+                        <span class="terminal-title">Python 终端 — 运行效果演示</span>
+                    </div>
+                    <div class="terminal-line"><span class="t-prompt">▶</span><span class="t-comment">  # Python 显示提示，等待你在键盘上打字</span></div>
+                    <div class="terminal-line"><span class="t-output">请输入你的名字：</span><span class="t-input">小明</span><span class="t-comment">  ← 用户输入后按 Enter</span></div>
+                    <div class="terminal-line"><span class="t-output">你好，小明！欢迎学习 Python！</span></div>
+                </div>
+
+                <h3 class="content-h3">📌 基本语法</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python"># 格式：变量名 = input("提示文字")
+name = input("请输入你的名字：")
+print("你好，" + name + "！欢迎学习 Python！")</code></pre>
+                </div>
+
+                <div class="info-box" style="background:linear-gradient(135deg,#fee2e2,#fecaca);border-color:#ef4444;">
+                    <div class="info-box-icon">⚠️</div>
+                    <div class="info-box-text">
+                        <strong>重要：input() 永远返回字符串！</strong>
+                        <p>不管用户输入了什么，<code>input()</code> 拿到的结果都是字符串（str）类型。如果你要把它当数字用，必须先用 <code>int()</code> 或 <code>float()</code> 转换，否则会报错。</p>
+                    </div>
+                </div>
+
+                <h3 class="content-h3">🔢 输入数字时要先转类型</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python"># ❌ 错误示范：直接用 input 的结果做数学运算
+age_str = input("请输入年龄：")   # 用户输入 14，得到字符串 "14"
+# print(age_str + 1)             # 报错！TypeError: 字符串不能 + 整数
+
+# ✅ 正确做法：用 int() 转换成整数
+age = int(input("请输入年龄："))  # 输入 14 → 整数 14
+print("明年你", age + 1, "岁了") # 输出: 明年你 15 岁了
+
+# ✅ 输入小数时用 float()
+height = float(input("请输入身高(m)："))
+print(f"你的身高是 {height} 米")</code></pre>
+                </div>
+
+                <!-- 互动模拟器 -->
+                <div class="simulator-wrap">
+                    <div class="sim-title">🎮 试试看！input() 模拟器</div>
+                    <div class="sim-row">
+                        <span class="sim-label">输入你的名字：</span>
+                        <input class="sim-input" id="simName" type="text" placeholder="在这里打你的名字…" maxlength="20">
+                    </div>
+                    <div class="sim-row">
+                        <span class="sim-label">输入你的年龄：</span>
+                        <input class="sim-input" id="simAge" type="number" placeholder="例如：14" min="1" max="100">
+                    </div>
+                    <div class="sim-row">
+                        <button class="sim-run-btn" onclick="runInputSim()">▶ 运行程序</button>
+                    </div>
+                    <div class="sim-output" id="simOutput">
+                        <div class="out-label">▶ 输出结果</div>
+                        <span style="color:#475569">（填写上面的内容后点击运行）</span>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-icon">💡</div>
+                    <div class="info-box-text">
+                        <strong>小技巧：input() 和 int() 可以写在一行</strong>
+                        <p>直接写 <code>age = int(input("输入年龄："))</code>，从里往外读：先执行 input 拿到字符串，再 int() 转成整数，最后赋值给 age。这是非常常见的写法！</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. if 判断 -->
+            <section class="content-section animate-in" style="animation-delay:.2s">
+                <div class="section-label">
+                    <div class="section-label-icon">🔀</div>
+                    <span>② if 判断 — 让程序"做决定"</span>
+                </div>
+
+                <p class="content-p">
+                    现实中我们经常做判断：<em>"如果今天下雨，就带伞。"</em>
+                    程序里的 <code>if</code> 语句含义完全一样——<strong>如果某个条件成立（True），就执行对应的代码</strong>，否则跳过。
+                </p>
+
+                <h3 class="content-h3">📐 基本语法格式</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">语法格式</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">if 条件:
+    # 条件为 True 时执行（注意：这里必须缩进！）
+    执行的代码A
+    执行的代码B
+
+后续代码  # 不管条件真假都会执行</code></pre>
+                </div>
+
+                <p class="content-p">来看一个真实例子——判断用户能否进入游乐园（身高要求 ≥ 120 cm）：</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">height = int(input("请输入你的身高（厘米）："))
+
+if height >= 120:
+    print("✅ 欢迎进入！")
+    print("祝你玩得开心~")
+
+print("感谢光临！")  # 这行不管身高多少都会打印</code></pre>
+                </div>
+
+                <h3 class="content-h3">🗺️ 执行流程图</h3>
+                <div class="flowchart">
+                    <div class="fc-start">开始</div>
+                    <div class="fc-arrow"></div>
+                    <div class="fc-diamond">height &ge; 120 ？</div>
+                    <div class="fc-branches">
+                        <div class="fc-branch">
+                            <div class="fc-branch-label label-yes">True ✓</div>
+                            <div class="fc-arrow" style="height:20px"></div>
+                            <div class="fc-action fc-action-green">打印 "欢迎进入"</div>
+                        </div>
+                        <div class="fc-branch">
+                            <div class="fc-branch-label label-no">False ✗</div>
+                            <div class="fc-arrow" style="height:20px"></div>
+                            <div class="fc-action fc-action-gray">（直接跳过）</div>
+                        </div>
+                    </div>
+                    <div class="fc-arrow" style="margin-top:16px"></div>
+                    <div class="fc-end">打印 "感谢光临"（总会执行）</div>
+                </div>
+
+                <!-- 缩进警告 -->
+                <div class="indent-warn">
+                    <div class="indent-warn-icon">📏</div>
+                    <div style="flex:1">
+                        <div class="indent-warn-title">⚠️ 缩进是 Python 的语法规则，不是可选项！</div>
+                        <div class="indent-warn-text">
+                            if 语句后面的代码块<strong>必须缩进</strong>（通常 4 个空格或 1 个 Tab）。
+                            忘记缩进会直接报错 <code>IndentationError</code>！
+                        </div>
+                        <div class="indent-compare">
+                            <div class="ic-wrong"><div class="ic-label">❌ 错误写法</div>if score > 60:
+print("及格")  # 没缩进
+→ IndentationError!</div>
+                            <div class="ic-correct"><div class="ic-label">✅ 正确写法</div>if score > 60:
+    print("及格")  # 4格缩进
+→ 正常运行 ✓</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. if-else -->
+            <section class="content-section animate-in" style="animation-delay:.25s">
+                <div class="section-label">
+                    <div class="section-label-icon">🔄</div>
+                    <span>③ if-else — "要么…要么…"</span>
+                </div>
+
+                <p class="content-p">
+                    有时候我们需要：<em>"如果下雨就带伞，<strong>否则</strong>就带帽子。"</em>
+                    两条路必须走一条，这时候就用 <code>if-else</code>。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">语法格式</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">if 条件:
+    # 条件为 True 时执行
+    代码块 A
+else:
+    # 条件为 False 时执行
+    代码块 B</code></pre>
+                </div>
+
+                <h3 class="content-h3">🎯 例一：判断奇数或偶数</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">num = int(input("请输入一个整数："))
+
+if num % 2 == 0:
+    print(f"{num} 是偶数")
+else:
+    print(f"{num} 是奇数")
+
+# 输入 8 → 8 是偶数
+# 输入 7 → 7 是奇数</code></pre>
+                </div>
+
+                <h3 class="content-h3">🎯 例二：判断是否及格</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">score = int(input("请输入你的成绩："))
+
+if score >= 60:
+    print("🎉 恭喜，及格了！")
+else:
+    print("😢 没及格，再加把劲！")
+
+# 输入 75 → 🎉 恭喜，及格了！
+# 输入 45 → 😢 没及格，再加把劲！</code></pre>
+                </div>
+
+                <h3 class="content-h3">🗺️ if-else 执行流程</h3>
+                <div class="flowchart">
+                    <div class="fc-start">开始</div>
+                    <div class="fc-arrow"></div>
+                    <div class="fc-diamond">score &ge; 60 ？</div>
+                    <div class="fc-branches">
+                        <div class="fc-branch">
+                            <div class="fc-branch-label label-yes">True ✓</div>
+                            <div class="fc-arrow" style="height:20px"></div>
+                            <div class="fc-action fc-action-green">打印 "恭喜及格"</div>
+                        </div>
+                        <div class="fc-branch">
+                            <div class="fc-branch-label label-no">False ✗</div>
+                            <div class="fc-arrow" style="height:20px"></div>
+                            <div class="fc-action fc-action-red">打印 "没及格"</div>
+                        </div>
+                    </div>
+                    <div class="fc-arrow" style="margin-top:16px"></div>
+                    <div class="fc-end">结束</div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-icon">💡</div>
+                    <div class="info-box-text">
+                        <strong>记住：if 和 else 要"对齐"</strong>
+                        <p><code>else</code> 和对应的 <code>if</code> 必须处于同一缩进级别（左边对齐），Python 才知道它们是一对。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. if-elif-else -->
+            <section class="content-section animate-in" style="animation-delay:.3s">
+                <div class="section-label">
+                    <div class="section-label-icon">🌿</div>
+                    <span>④ if-elif-else — 多重条件判断</span>
+                </div>
+
+                <p class="content-p">
+                    如果有三种或更多情况要分别处理，就用 <code>if-elif-else</code>。
+                    <strong>elif</strong> 是 "else if" 的缩写。Python 从上往下依次检查，
+                    一旦某个条件成立就执行对应代码块，然后<strong>直接跳出整个判断</strong>，后面的 elif/else 不再检查。
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">语法格式</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">if 条件1:
+    执行代码A      # 条件1 成立
+elif 条件2:
+    执行代码B      # 条件1 不成立，条件2 成立
+elif 条件3:
+    执行代码C      # 前两个都不成立，条件3 成立
+else:
+    执行代码D      # 以上全不成立时，兜底执行</code></pre>
+                </div>
+
+                <h3 class="content-h3">📊 成绩等级判断（可视化）</h3>
+                <div class="multi-flow">
+                    <div class="mf-row">
+                        <div class="mf-cond mf-if">if<br>score ≥ 90</div>
+                        <div class="mf-body mf-body-if">🏆 输出 <strong>"优秀"</strong>，满足就立刻执行，后面不再检查</div>
+                    </div>
+                    <div class="mf-row">
+                        <div class="mf-cond mf-elif">elif<br>score ≥ 80</div>
+                        <div class="mf-body mf-body-elif">👍 输出 <strong>"良好"</strong>，走到这里说明 score &lt; 90</div>
+                    </div>
+                    <div class="mf-row">
+                        <div class="mf-cond mf-elif">elif<br>score ≥ 60</div>
+                        <div class="mf-body mf-body-elif">✅ 输出 <strong>"及格"</strong>，走到这里说明 score &lt; 80</div>
+                    </div>
+                    <div class="mf-row">
+                        <div class="mf-cond mf-else">else</div>
+                        <div class="mf-body mf-body-else">❌ 输出 <strong>"不及格"</strong>，以上全不满足时兜底</div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">score = int(input("请输入成绩（0-100）："))
+
+if score >= 90:
+    grade = "优秀 🏆"
+elif score >= 80:
+    grade = "良好 👍"
+elif score >= 60:
+    grade = "及格 ✅"
+else:
+    grade = "不及格 ❌"
+
+print(f"你的成绩等级是：{grade}")
+
+# 输入 95 → 你的成绩等级是：优秀 🏆
+# 输入 82 → 你的成绩等级是：良好 👍
+# 输入 67 → 你的成绩等级是：及格 ✅
+# 输入 40 → 你的成绩等级是：不及格 ❌</code></pre>
+                </div>
+
+                <!-- 滑块模拟器 -->
+                <div class="grade-sim">
+                    <h4>🎮 互动模拟器：拖动滑块，实时查看成绩等级</h4>
+                    <div class="grade-input-row">
+                        <span class="grade-label">成绩：</span>
+                        <input class="grade-slider" type="range" id="gradeSlider" min="0" max="100" value="75" oninput="updateGrade()">
+                        <span class="grade-val" id="gradeVal">75</span>
+                        <span class="grade-label">分</span>
+                    </div>
+                    <div class="grade-result" id="gradeResult">
+                        <span class="gr-label">▶ 程序输出</span>
+                        <span id="gradeOutput" class="grade-good">你的成绩等级是：良好 👍</span>
+                    </div>
+                </div>
+
+                <h3 class="content-h3">🌍 综合实战：判断所在季节</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">month = int(input("请输入月份（1-12）："))
+
+if month in [3, 4, 5]:
+    season = "🌸 春天"
+elif month in [6, 7, 8]:
+    season = "☀️ 夏天"
+elif month in [9, 10, 11]:
+    season = "🍂 秋天"
+else:
+    season = "❄️ 冬天"  # 12、1、2 月
+
+print(f"{month} 月属于{season}")
+
+# 输入 4  → 4 月属于🌸 春天
+# 输入 7  → 7 月属于☀️ 夏天
+# 输入 12 → 12 月属于❄️ 冬天</code></pre>
+                </div>
+            </section>
+
+            <!-- 5. 三种形式对比 -->
+            <section class="content-section animate-in" style="animation-delay:.35s">
+                <div class="section-label">
+                    <div class="section-label-icon">⚖️</div>
+                    <span>⑤ 三种形式对比总结</span>
+                </div>
+                <p class="content-p">来总结一下三种写法各自的使用场景：</p>
+                <div class="compare-grid">
+                    <div class="compare-card cc-blue">
+                        <div class="compare-card-head"><span>①</span> 只有 if</div>
+                        <div class="compare-card-body">
+                            条件成立时做某件事，不成立就什么都不做。适合"可做可不做"的场景。
+                            <code>if score == 100:
+    print("满分！")</code>
+                        </div>
+                    </div>
+                    <div class="compare-card cc-indigo">
+                        <div class="compare-card-head"><span>②</span> if-else</div>
+                        <div class="compare-card-body">
+                            两种情况必选其一，非 A 即 B。适合"非此即彼"的场景。
+                            <code>if age >= 18:
+    print("成年")
+else:
+    print("未成年")</code>
+                        </div>
+                    </div>
+                    <div class="compare-card cc-violet">
+                        <div class="compare-card-head"><span>③</span> if-elif-else</div>
+                        <div class="compare-card-body">
+                            三种及以上情况，从上往下依次判断，满足就停。适合分类、分级场景。
+                            <code>if score >= 90:
+    print("优秀")
+elif score >= 60:
+    print("及格")
+else:
+    print("不及格")</code>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. 嵌套 if -->
+            <section class="content-section animate-in" style="animation-delay:.38s">
+                <div class="section-label">
+                    <div class="section-label-icon">🪆</div>
+                    <span>⑥ 嵌套 if — if 里面再写 if</span>
+                </div>
+                <p class="content-p">
+                    有时候一个判断通过后，还需要继续判断，这就是<strong>嵌套 if</strong>——把 if 写在另一个 if 的代码块里面。
+                </p>
+
+                <div class="nested-demo">
+                    <div class="nd-outer">
+                        <div class="nd-label-outer">外层 if：先判断年龄</div>
+                        <div class="nd-body">如果 age >= 16 → 通过年龄验证，进入下一步</div>
+                        <div class="nd-inner">
+                            <div class="nd-label-inner">内层 if-else：再判断是否有票</div>
+                            <div class="nd-body">
+                                如果 has_ticket == "yes" → 打印 "✅ 欢迎入场！"<br>
+                                否则 → 打印 "❌ 请先购票"
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="code-lang">Python</span>
+                        <button class="copy-btn" onclick="copyCode(this)">复制代码</button>
+                    </div>
+                    <pre><code class="language-python">age = int(input("请输入年龄："))
+has_ticket = input("有票吗？(yes/no)：")
+
+if age >= 16:
+    if has_ticket == "yes":
+        print("✅ 欢迎入场！")
+    else:
+        print("❌ 请先购票再来")
+else:
+    print("❌ 未满 16 岁，不能入场")
+
+# 年龄 18，有票 yes → ✅ 欢迎入场！
+# 年龄 18，有票 no  → ❌ 请先购票再来
+# 年龄 12，有票 yes → ❌ 未满 16 岁，不能入场</code></pre>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-icon">💡</div>
+                    <div class="info-box-text">
+                        <strong>嵌套 if 要注意缩进层级</strong>
+                        <p>每嵌套一层就多缩进 4 格。嵌套太多层会让代码很难读，一般不超过 3 层。
+                        很多嵌套情况都可以用 <code>and</code> 合并条件来简化，比如把上面的代码改写成 <code>if age >= 16 and has_ticket == "yes"</code>。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 本节要点 -->
+            <section class="content-section animate-in" style="animation-delay:.42s">
+                <div class="section-label">
+                    <div class="section-label-icon">📌</div>
+                    <span>本节要点</span>
+                </div>
+                <div class="summary-box" style="background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%);border-radius:16px;padding:30px;box-shadow:0 4px 16px rgba(139,92,246,.1);">
+                    <h3 style="margin:0 0 20px;color:#4f46e5;font-size:20px;font-weight:700;">🎯 本节重点回顾</h3>
+                    <div style="display:grid;gap:14px;">
+                        <div style="background:#eff6ff;padding:18px;border-left:4px solid #3b82f6;border-radius:8px;">
+                            <strong style="color:#1d4ed8;font-size:15px;">1. input() 语句</strong>
+                            <p style="margin:8px 0 0;color:#1e40af;line-height:1.65;">获取用户键盘输入，返回值永远是字符串；需要数字时必须用 <code>int()</code> 或 <code>float()</code> 转换。</p>
+                        </div>
+                        <div style="background:#f5f3ff;padding:18px;border-left:4px solid #8b5cf6;border-radius:8px;">
+                            <strong style="color:#6d28d9;font-size:15px;">2. if 语句</strong>
+                            <p style="margin:8px 0 0;color:#5b21b6;line-height:1.65;">条件为 True 时执行缩进的代码块。冒号和缩进缺一不可！</p>
+                        </div>
+                        <div style="background:#fef3c7;padding:18px;border-left:4px solid #f59e0b;border-radius:8px;">
+                            <strong style="color:#b45309;font-size:15px;">3. if-else 语句</strong>
+                            <p style="margin:8px 0 0;color:#92400e;line-height:1.65;">两条路选一条，条件为 True 走 if，条件为 False 走 else。</p>
+                        </div>
+                        <div style="background:#f0fdf4;padding:18px;border-left:4px solid #22c55e;border-radius:8px;">
+                            <strong style="color:#15803d;font-size:15px;">4. if-elif-else 语句</strong>
+                            <p style="margin:8px 0 0;color:#166534;line-height:1.65;">多个条件从上往下依次判断，匹配到第一个就执行并跳出，else 兜底处理。</p>
+                        </div>
+                        <div style="background:#fff1f2;padding:18px;border-left:4px solid #f43f5e;border-radius:8px;">
+                            <strong style="color:#be123c;font-size:15px;">5. 缩进规则</strong>
+                            <p style="margin:8px 0 0;color:#9f1239;line-height:1.65;">Python 用缩进（4 个空格）划分代码块，不是装饰，是语法的一部分！忘记缩进 = 报错。</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 互动测验 -->
+            <section class="content-section animate-in" style="animation-delay:.47s">
+                <div class="section-label">
+                    <div class="section-label-icon">🧠</div>
+                    <span>互动测验</span>
+                </div>
+
+                <div class="quiz-container">
+
+                    <div class="quiz-item" data-question="1">
+                        <div class="quiz-question"><span class="quiz-num">Q1</span><code>input()</code> 函数返回的数据类型是什么？</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. int（整数）</div>
+                            <div class="quiz-option" data-correct="true">B. str（字符串）</div>
+                            <div class="quiz-option" data-correct="false">C. float（浮点数）</div>
+                            <div class="quiz-option" data-correct="false">D. bool（布尔值）</div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="2">
+                        <div class="quiz-question"><span class="quiz-num">Q2</span>以下代码，用户输入 <code>16</code> 时会输出什么？<br><code style="white-space:pre">age = int(input("输入年龄："))
+if age >= 18:
+    print("成年")
+print("结束")</code></div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. 成年<br>结束</div>
+                            <div class="quiz-option" data-correct="true">B. 结束</div>
+                            <div class="quiz-option" data-correct="false">C. 成年</div>
+                            <div class="quiz-option" data-correct="false">D. 什么都不输出</div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="3">
+                        <div class="quiz-question"><span class="quiz-num">Q3</span>Python 的 if 语句代码块必须用什么标记？</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. 花括号 <code>{ }</code></div>
+                            <div class="quiz-option" data-correct="false">B. 小括号 <code>( )</code></div>
+                            <div class="quiz-option" data-correct="true">C. 缩进（4 个空格）</div>
+                            <div class="quiz-option" data-correct="false">D. 分号 <code>;</code></div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="4">
+                        <div class="quiz-question"><span class="quiz-num">Q4</span><code>score = 85</code> 时，下面的代码输出什么？<br>
+                        <code style="white-space:pre">if score >= 90:
+    print("优秀")
+elif score >= 80:
+    print("良好")
+elif score >= 60:
+    print("及格")
+else:
+    print("不及格")</code></div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. 优秀</div>
+                            <div class="quiz-option" data-correct="true">B. 良好</div>
+                            <div class="quiz-option" data-correct="false">C. 及格</div>
+                            <div class="quiz-option" data-correct="false">D. 良好 和 及格 都输出</div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="5">
+                        <div class="quiz-question"><span class="quiz-num">Q5</span>想让用户输入一个数字并计算它的平方，下面哪段代码是正确的？</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. <code>n = input("数字：") * 2</code></div>
+                            <div class="quiz-option" data-correct="true">B. <code>n = int(input("数字："))<br>print(n ** 2)</code></div>
+                            <div class="quiz-option" data-correct="false">C. <code>n = input("数字：")<br>print(n ** 2)</code></div>
+                            <div class="quiz-option" data-correct="false">D. <code>n = int("数字：")<br>print(n * n)</code></div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="6">
+                        <div class="quiz-question"><span class="quiz-num">Q6</span><code>else</code> 后面可以加条件吗？比如写成 <code>else score &lt; 60:</code></div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. 可以，这样写完全正确</div>
+                            <div class="quiz-option" data-correct="true">B. 不可以，else 不带条件，要加条件应该用 elif</div>
+                            <div class="quiz-option" data-correct="false">C. 可以，但只有 Python 3 才支持</div>
+                            <div class="quiz-option" data-correct="false">D. 可以，加括号就能运行</div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="7">
+                        <div class="quiz-question"><span class="quiz-num">Q7</span>以下关于 if-elif-else 的说法，哪一项是<strong>错误的</strong>？</div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="false">A. elif 可以有很多个</div>
+                            <div class="quiz-option" data-correct="false">B. else 是可选的，可以不写</div>
+                            <div class="quiz-option" data-correct="true">C. 如果多个条件都成立，它们对应的代码块都会执行</div>
+                            <div class="quiz-option" data-correct="false">D. Python 从上到下判断，第一个成立的就执行并跳出</div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-item" data-question="8">
+                        <div class="quiz-question"><span class="quiz-num">Q8</span>输入年龄 <code>20</code>，再输入 <code>yes</code>，以下嵌套 if 程序会输出什么？<br>
+                        <code style="white-space:pre">age = int(input())
+ticket = input()
+if age >= 18:
+    if ticket == "yes":
+        print("入场")
+    else:
+        print("买票")
+else:
+    print("未成年")</code></div>
+                        <div class="quiz-options">
+                            <div class="quiz-option" data-correct="true">A. 入场</div>
+                            <div class="quiz-option" data-correct="false">B. 买票</div>
+                            <div class="quiz-option" data-correct="false">C. 未成年</div>
+                            <div class="quiz-option" data-correct="false">D. 报错</div>
+                        </div>
+                        <div class="quiz-feedback"></div>
+                    </div>
+
+                    <div class="quiz-submit-area" id="quizSubmitArea">
+                        <button class="quiz-submit-btn" onclick="submitQuiz()">提交答案</button>
+                        <div class="quiz-hint">请回答全部 8 道题后再提交</div>
+                    </div>
+
+                    <div class="quiz-result" id="quizResult" style="display:none">
+                        <div class="result-score" id="resultScore"></div>
+                        <div class="result-msg" id="resultMsg"></div>
+                        <button class="retry-btn" onclick="resetQuiz()">🔄 重新作答</button>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 章节导航 -->
+            <div class="chapter-footer animate-in" style="animation-delay:.5s">
+                <div class="complete-btn-area">
+                    <button id="markCompleteBtn">标记本节完成</button>
+                </div>
+                <div class="chapter-nav">
+                    <a href="chapter2-3.html" class="nav-btn prev-btn">
+                        <span class="nav-arrow">←</span>
+                        <span>上一节：数据类型与运算符</span>
+                    </a>
+                    <a href="chapter3-2.html" class="nav-btn next-btn">
+                        <span>下一节：while 循环</span>
+                        <span class="nav-arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script>
+        hljs.highlightAll();
+
+        /* ── 代码复制 ─────────────────────────────── */
+        function copyCode(btn) {
+            const code = btn.closest('.code-block').querySelector('code').innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                btn.textContent = '已复制 ✓';
+                setTimeout(() => btn.textContent = '复制代码', 2000);
+            });
+        }
+
+        /* ── input() 模拟器 ───────────────────────── */
+        function runInputSim() {
+            const name   = document.getElementById('simName').value.trim();
+            const ageRaw = document.getElementById('simAge').value.trim();
+            const out    = document.getElementById('simOutput');
+
+            if (!name && !ageRaw) {
+                out.innerHTML = '<div class="out-label">▶ 输出结果</div><span style="color:#f87171">请先填写名字或年龄再运行！</span>';
+                return;
+            }
+
+            const displayName = name || "同学";
+            let lines = [`你好，${displayName}！欢迎学习 Python！`];
+
+            if (ageRaw) {
+                const age = parseInt(ageRaw);
+                if (!isNaN(age) && age > 0) {
+                    lines.push(`你今年 ${age} 岁，明年就 ${age + 1} 岁啦！`);
+                    if (age < 13)       lines.push('你还是小学生，超棒的！🌱');
+                    else if (age <= 18) lines.push('你正处于青少年阶段，是学编程的黄金期！🚀');
+                    else                lines.push('欢迎成年的你一起学 Python！✨');
+                }
+            }
+
+            out.innerHTML = '<div class="out-label">▶ 输出结果</div>' +
+                lines.map(l => `<div style="color:#86efac">${l}</div>`).join('');
+        }
+
+        /* ── 成绩滑块 ─────────────────────────────── */
+        function updateGrade() {
+            const score = parseInt(document.getElementById('gradeSlider').value);
+            document.getElementById('gradeVal').textContent = score;
+            let text, cls;
+            if      (score >= 90) { text = '你的成绩等级是：优秀 🏆'; cls = 'grade-excellent'; }
+            else if (score >= 80) { text = '你的成绩等级是：良好 👍'; cls = 'grade-good'; }
+            else if (score >= 60) { text = '你的成绩等级是：及格 ✅'; cls = 'grade-pass'; }
+            else                  { text = '你的成绩等级是：不及格 ❌'; cls = 'grade-fail'; }
+            const el = document.getElementById('gradeOutput');
+            el.textContent = text;
+            el.className   = cls;
+        }
+        updateGrade();
+
+        /* ── 测验逻辑 ─────────────────────────────── */
+        let selectedAnswers = {};
+
+        document.querySelectorAll('.quiz-option').forEach(option => {
+            option.addEventListener('click', function () {
+                const item = this.closest('.quiz-item');
+                if (item.classList.contains('answered')) return;
+                item.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                selectedAnswers[item.dataset.question] = this.dataset.correct === 'true';
+                const total = document.querySelectorAll('.quiz-item').length;
+                const done  = Object.keys(selectedAnswers).length;
+                const hint  = document.querySelector('.quiz-hint');
+                hint.textContent = done >= total ? '全部回答完毕，可以提交了！' : `已回答 ${done} / ${total} 题`;
+                hint.style.color = done >= total ? '#22c55e' : '#94a3b8';
+            });
+        });
+
+        function submitQuiz() {
+            const items = document.querySelectorAll('.quiz-item');
+            if (Object.keys(selectedAnswers).length < items.length) {
+                alert('请先回答所有题目再提交！'); return;
+            }
+            let correct = 0;
+            items.forEach(item => {
+                item.classList.add('answered');
+                const selected  = item.querySelector('.quiz-option.selected');
+                const feedback  = item.querySelector('.quiz-feedback');
+                const isCorrect = selectedAnswers[item.dataset.question];
+                if (isCorrect) {
+                    selected.classList.add('correct');
+                    feedback.textContent = '✓ 回答正确！';
+                    feedback.className   = 'quiz-feedback feedback-correct';
+                    correct++;
+                } else {
+                    selected.classList.add('wrong');
+                    feedback.textContent = '✗ 回答错误，正确答案已标绿';
+                    feedback.className   = 'quiz-feedback feedback-wrong';
+                    item.querySelectorAll('.quiz-option').forEach(o => {
+                        if (o.dataset.correct === 'true') o.classList.add('correct');
+                    });
+                }
+            });
+            document.getElementById('quizSubmitArea').style.display = 'none';
+            const result  = document.getElementById('quizResult');
+            const scoreEl = document.getElementById('resultScore');
+            result.style.display = 'block';
+            scoreEl.textContent  = `${correct} / ${items.length}`;
+            scoreEl.style.color  = correct === items.length ? '#22c55e' : correct >= 6 ? '#f59e0b' : '#ef4444';
+            document.getElementById('resultMsg').textContent =
+                correct === items.length ? '🎉 全部答对！你已完全掌握条件判断，太棒了！' :
+                correct >= 6 ? '👍 答得不错！有个别地方可以再复习一下。' :
+                '💪 没关系，多看几遍内容，理解 if 的逻辑，再来挑战！';
+        }
+
+        function resetQuiz() {
+            selectedAnswers = {};
+            document.querySelectorAll('.quiz-item').forEach(item => {
+                item.classList.remove('answered');
+                item.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected', 'correct', 'wrong'));
+                const fb = item.querySelector('.quiz-feedback');
+                fb.textContent = ''; fb.className = 'quiz-feedback';
+            });
+            document.getElementById('quizResult').style.display    = 'none';
+            document.getElementById('quizSubmitArea').style.display = 'flex';
+            const hint = document.querySelector('.quiz-hint');
+            hint.textContent = '请回答全部 8 道题后再提交';
+            hint.style.color = '#94a3b8';
+        }
+
+        /* ── 进度条动画 ───────────────────────────── */
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('progressBar').style.width  = '25%';
+                document.getElementById('progressText').textContent = '25%';
+            }, 500);
+        });
+    </script>
+</body>
+</html>
