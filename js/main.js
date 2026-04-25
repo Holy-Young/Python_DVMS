@@ -31,7 +31,7 @@ const COURSE_CONFIG = {
       lessons: [
         { title: "4.1 定义函数",      file: "chapter4.html" },
         { title: "4.2 参数与返回值",  file: "chapter4-2.html" },
-        { title: "4.3 匿名函数",      file: "chapter4-3.html" },
+        { title: "4.3 匿名函数与内置函数",      file: "chapter4-3.html" },
       ]
     },
   ]
